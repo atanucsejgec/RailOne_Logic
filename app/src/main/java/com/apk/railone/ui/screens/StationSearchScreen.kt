@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.apk.railone.data.Station
 import com.apk.railone.data.StationRepository
 import com.apk.railone.ui.components.StationListItem
+import com.apk.railone.utils.FuzzySearch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,11 +41,11 @@ fun StationSearchScreen(
         if (searchQuery.isBlank()) {
             allStations
         } else {
-            val query = searchQuery.lowercase().trim()
-            allStations.filter { station ->
-                station.stationName.lowercase().contains(query) ||
-                        station.stationCode.lowercase().contains(query)
-            }
+            allStations
+                .map { it to FuzzySearch.calculateScore(searchQuery, it) }
+                .filter { it.second < 100 }
+                .sortedBy { it.second }
+                .map { it.first }
         }
     }
 
